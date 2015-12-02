@@ -10,12 +10,12 @@ $ pip install mec2
 
 Command line::
 
-$ mec2 instance_id
+$ mec2 instance_name
 
 Library::
 
   import mec2
-  print mec2.instance_id()
+  print mec2.instance_name()
 
 View available commands in `source code
 <https://github.com/jtconnor/mec2/blob/master/mec2/mec2.py>`_.
