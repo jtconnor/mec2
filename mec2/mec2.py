@@ -30,6 +30,13 @@ def instance_metadata():
 
 
 @cached
+def toplevel(name=None):
+    im = instance_metadata()
+    assert name in im, "Invalid metadata attribute=" + name
+    return im[name]
+
+
+@cached
 def region():
     return availability_zone()[:-1]
 
@@ -60,7 +67,7 @@ def vpc_name():
 
 @cached
 def instance_id():
-    return instance_metadata()['instance-id']
+    return toplevel('instance-id')
 
 
 @cached
@@ -76,3 +83,31 @@ def instance_tags():
 @cached
 def instance_name():
     return instance_tags().get('Name')
+
+
+@cached
+def network_interfaces():
+    im = instance_metadata()
+    return im['network']['interfaces']['macs']
+
+
+@cached
+def network_interface(mac=None):
+    macs = network_interfaces()
+    if mac in macs:
+        return macs[mac]
+
+    else:
+        assert len(macs.keys()) == 1
+        mac = macs.keys()[0]
+        return macs[mac]
+
+
+@cached
+def security_groups():
+    return network_interface()['security-groups']
+
+
+@cached
+def security_group_ids():
+    return network_interface()['security-group-ids']
