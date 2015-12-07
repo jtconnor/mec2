@@ -86,6 +86,24 @@ def instance_name():
 
 
 @cached
+def public_keys():
+    im = instance_metadata()
+    return im['public-keys']
+
+
+@cached
+def public_key(name=None):
+    keys = public_keys()
+    if name in keys:
+        return keys[name]
+
+    else:
+        assert len(keys.keys()) == 1
+        name = keys.keys()[0]
+        return keys[name]
+
+
+@cached
 def network_interfaces():
     im = instance_metadata()
     return im['network']['interfaces']['macs']
