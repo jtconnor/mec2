@@ -29,34 +29,28 @@ def instance_metadata():
     return boto.utils.get_instance_metadata()
 
 
-@cached
 def toplevel(name=None):
     im = instance_metadata()
     assert name in im, "Invalid metadata attribute=" + name
     return im[name]
 
 
-@cached
 def region():
     return availability_zone()[:-1]
 
 
-@cached
 def zone():
     return availability_zone()
 
 
-@cached
 def availability_zone():
     return placement()['availability-zone']
 
 
-@cached
 def placement():
     return toplevel('placement')
 
 
-@cached
 def vpc_id():
     return network_interface()['vpc-id']
 
@@ -70,27 +64,22 @@ def vpc_tags():
     return vpcs[0].tags
 
 
-@cached
 def vpc_tag(name):
     return vpc_tags().get(name, None)
 
 
-@cached
 def vpc_name():
     return vpc_tag('Name')
 
 
-@cached
 def type():
     return toplevel('instance-type')
 
 
-@cached
 def id():
     return toplevel('instance-id')
 
 
-@cached
 def instance_id():
     return toplevel('instance-id')
 
@@ -105,22 +94,18 @@ def instance_tags():
     return instances[0].tags
 
 
-@cached
 def instance_tag(name):
     return instance_tags().get(name, None)
 
 
-@cached
 def instance_name():
     return instance_tag('Name')
 
 
-@cached
 def public_keys():
     return toplevel('public-keys')
 
 
-@cached
 def public_key(name=None):
     keys = public_keys()
     if name in keys:
@@ -132,12 +117,10 @@ def public_key(name=None):
         return keys[name]
 
 
-@cached
 def network_interfaces():
     return toplevel('network')['interfaces']['macs']
 
 
-@cached
 def network_interface(mac=None):
     macs = network_interfaces()
     if mac in macs:
@@ -149,11 +132,9 @@ def network_interface(mac=None):
         return macs[mac]
 
 
-@cached
 def security_groups():
     return network_interface()['security-groups']
 
 
-@cached
 def security_group_ids():
     return network_interface()['security-group-ids']
