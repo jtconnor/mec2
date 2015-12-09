@@ -42,27 +42,52 @@ def region():
 
 
 @cached
+def zone():
+    return availability_zone()
+
+
+@cached
 def availability_zone():
-    im = instance_metadata()
-    return im['placement']['availability-zone']
+    return placement()['availability-zone']
+
+
+@cached
+def placement():
+    return toplevel('placement')
 
 
 @cached
 def vpc_id():
-    im = instance_metadata()
-    macs = im['network']['interfaces']['macs']
-    assert len(macs.keys()) == 1
-    mac = macs.keys()[0]
-    return macs[mac]['vpc-id']
+    return network_interface()['vpc-id']
 
 
 @cached
-def vpc_name():
+def vpc_tags():
     vpc_conn = boto.vpc.connect_to_region(region())
     vpcs = vpc_conn.get_all_vpcs(vpc_ids=[vpc_id()])
     assert len(vpcs) == 1, \
         'Should have one vpc with id={}, not {}'.format(vpc_id(), vpcs)
-    return vpcs[0].tags.get('Name')
+    return vpcs[0].tags
+
+
+@cached
+def vpc_tag(name):
+    return vpc_tags().get(name, None)
+
+
+@cached
+def vpc_name():
+    return vpc_tag('Name')
+
+
+@cached
+def type():
+    return toplevel('instance-type')
+
+
+@cached
+def id():
+    return toplevel('instance-id')
 
 
 @cached
@@ -81,14 +106,18 @@ def instance_tags():
 
 
 @cached
+def instance_tag(name):
+    return instance_tags().get(name, None)
+
+
+@cached
 def instance_name():
-    return instance_tags().get('Name')
+    return instance_tag('Name')
 
 
 @cached
 def public_keys():
-    im = instance_metadata()
-    return im['public-keys']
+    return toplevel('public-keys')
 
 
 @cached
@@ -105,8 +134,7 @@ def public_key(name=None):
 
 @cached
 def network_interfaces():
-    im = instance_metadata()
-    return im['network']['interfaces']['macs']
+    return toplevel('network')['interfaces']['macs']
 
 
 @cached
