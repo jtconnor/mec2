@@ -29,38 +29,59 @@ def instance_metadata():
     return boto.utils.get_instance_metadata()
 
 
-@cached
+def toplevel(name=None):
+    im = instance_metadata()
+    assert name in im, "Invalid metadata attribute=" + name
+    return im[name]
+
+
 def region():
     return availability_zone()[:-1]
 
 
-@cached
+def zone():
+    return availability_zone()
+
+
 def availability_zone():
-    im = instance_metadata()
-    return im['placement']['availability-zone']
+    return placement()['availability-zone']
 
 
-@cached
+def placement():
+    return toplevel('placement')
+
+
 def vpc_id():
-    im = instance_metadata()
-    macs = im['network']['interfaces']['macs']
-    assert len(macs.keys()) == 1
-    mac = macs.keys()[0]
-    return macs[mac]['vpc-id']
+    return network_interface()['vpc-id']
 
 
 @cached
-def vpc_name():
+def vpc_tags():
     vpc_conn = boto.vpc.connect_to_region(region())
     vpcs = vpc_conn.get_all_vpcs(vpc_ids=[vpc_id()])
     assert len(vpcs) == 1, \
         'Should have one vpc with id={}, not {}'.format(vpc_id(), vpcs)
-    return vpcs[0].tags.get('Name')
+    return vpcs[0].tags
 
 
-@cached
+def vpc_tag(name):
+    return vpc_tags().get(name, None)
+
+
+def vpc_name():
+    return vpc_tag('Name')
+
+
+def type():
+    return toplevel('instance-type')
+
+
+def id():
+    return toplevel('instance-id')
+
+
 def instance_id():
-    return instance_metadata()['instance-id']
+    return toplevel('instance-id')
 
 
 @cached
@@ -73,6 +94,47 @@ def instance_tags():
     return instances[0].tags
 
 
-@cached
+def instance_tag(name):
+    return instance_tags().get(name, None)
+
+
 def instance_name():
-    return instance_tags().get('Name')
+    return instance_tag('Name')
+
+
+def public_keys():
+    return toplevel('public-keys')
+
+
+def public_key(name=None):
+    keys = public_keys()
+    if name in keys:
+        return keys[name]
+
+    else:
+        assert len(keys.keys()) == 1
+        name = keys.keys()[0]
+        return keys[name]
+
+
+def network_interfaces():
+    return toplevel('network')['interfaces']['macs']
+
+
+def network_interface(mac=None):
+    macs = network_interfaces()
+    if mac in macs:
+        return macs[mac]
+
+    else:
+        assert len(macs.keys()) == 1
+        mac = macs.keys()[0]
+        return macs[mac]
+
+
+def security_groups():
+    return network_interface()['security-groups']
+
+
+def security_group_ids():
+    return network_interface()['security-group-ids']
